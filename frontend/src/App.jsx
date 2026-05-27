@@ -1,53 +1,89 @@
-import { Routes, Route, Link } from 'react-router-dom';
+import { Routes, Route, Link, Navigate, useNavigate } from 'react-router-dom';
 import { Formik, Form, Field } from 'formik';
+import axios from 'axios';
+import { useState } from 'react';
 
-const HomePage = () => (
-  <div>
-    <h1>Hexlet Chat</h1>
-    <p>Главная страница чата</p>
-    <Link to="/login">Войти</Link>
-  </div>
-);
+const getToken = () => localStorage.getItem('token');
 
-const LoginPage = () => (
-  <div>
-    <h1>Войти</h1>
+const HomePage = () => {
+  const token = getToken();
 
-    <Formik
-      initialValues={{
-        username: '',
-        password: '',
-      }}
-      onSubmit={(values) => {
-        console.log(values);
-      }}
-    >
-      <Form>
-        <div>
-          <label htmlFor="username">Ваш ник</label>
-          <Field
-            id="username"
-            name="username"
-            type="text"
-            placeholder="Ваш ник"
-          />
-        </div>
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
 
-        <div>
-          <label htmlFor="password">Пароль</label>
-          <Field
-            id="password"
-            name="password"
-            type="password"
-            placeholder="Пароль"
-          />
-        </div>
+  return (
+    <div>
+      <h1>Hexlet Chat</h1>
+      <p>Вы авторизованы. Здесь позже будет чат.</p>
+    </div>
+  );
+};
 
-        <button type="submit">Войти</button>
-      </Form>
-    </Formik>
-  </div>
-);
+const LoginPage = () => {
+  const navigate = useNavigate();
+  const [authError, setAuthError] = useState(false);
+
+  return (
+    <div>
+      <h1>Войти</h1>
+
+      <Formik
+        initialValues={{
+          username: '',
+          password: '',
+        }}
+        onSubmit={async (values, { setSubmitting }) => {
+          setAuthError(false);
+
+          try {
+            const response = await axios.post('/api/v1/login', values);
+            localStorage.setItem('token', response.data.token);
+            navigate('/');
+          } catch (error) {
+            setAuthError(true);
+          } finally {
+            setSubmitting(false);
+          }
+        }}
+      >
+        {({ isSubmitting }) => (
+          <Form>
+            <div>
+              <label htmlFor="username">Ваш ник</label>
+              <Field
+                id="username"
+                name="username"
+                type="text"
+                placeholder="Ваш ник"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="password">Пароль</label>
+              <Field
+                id="password"
+                name="password"
+                type="password"
+                placeholder="Пароль"
+              />
+            </div>
+
+            {authError && (
+              <div style={{ color: 'red' }}>
+                Неверные имя пользователя или пароль
+              </div>
+            )}
+
+            <button type="submit" disabled={isSubmitting}>
+              Войти
+            </button>
+          </Form>
+        )}
+      </Formik>
+    </div>
+  );
+};
 
 const NotFoundPage = () => (
   <div>
