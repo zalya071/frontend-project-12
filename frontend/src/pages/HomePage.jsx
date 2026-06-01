@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Formik, Form, Field, ErrorMessage } from 'formik';
 import axios from 'axios';
 import { io } from 'socket.io-client';
 import { useDispatch, useSelector } from 'react-redux';
 
 import Header from '../components/Header.jsx';
 import Modal from '../components/Modal.jsx';
+import ChannelForm from '../components/ChannelForm.jsx';
 import { getToken } from '../utils/auth.js';
 import { makeChannelSchema } from '../utils/validation.js';
 
@@ -171,6 +171,59 @@ const HomePage = () => {
     }
   };
 
+  const handleAddChannel = async (values, { setSubmitting }) => {
+    try {
+      const response = await axios.post(
+        '/api/v1/channels',
+        { name: values.name.trim() },
+        authHeaders,
+      );
+
+      dispatch(setCurrentChannelId(response.data.id));
+      closeModal();
+    } catch (error) {
+      console.error(error);
+      alert(t('errors.addChannelFailed'));
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleRenameChannel = async (values, { setSubmitting }) => {
+    try {
+      await axios.patch(
+        `/api/v1/channels/${selectedChannel.id}`,
+        { name: values.name.trim() },
+        authHeaders,
+      );
+
+      closeModal();
+    } catch (error) {
+      console.error(error);
+      alert(t('errors.renameChannelFailed'));
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleRemoveChannel = async () => {
+    setRemoving(true);
+
+    try {
+      await axios.delete(
+        `/api/v1/channels/${selectedChannel.id}`,
+        authHeaders,
+      );
+
+      closeModal();
+    } catch (error) {
+      console.error(error);
+      alert(t('errors.removeChannelFailed'));
+    } finally {
+      setRemoving(false);
+    }
+  };
+
   return (
     <div className="app">
       <Header showLogout />
@@ -274,107 +327,40 @@ const HomePage = () => {
 
       {modal === 'add' && (
         <Modal title={t('modals.addChannel')} onClose={closeModal}>
-          <Formik
+          <ChannelForm
             initialValues={{ name: '' }}
             validationSchema={makeChannelSchema(channels, t)}
-            onSubmit={async (values, { setSubmitting }) => {
-              try {
-                const response = await axios.post(
-                  '/api/v1/channels',
-                  { name: values.name.trim() },
-                  authHeaders,
-                );
-
-                dispatch(setCurrentChannelId(response.data.id));
-                closeModal();
-              } catch (error) {
-                console.error(error);
-                alert(t('errors.addChannelFailed'));
-              } finally {
-                setSubmitting(false);
-              }
-            }}
-          >
-            {({ isSubmitting }) => (
-              <Form className="modal-form">
-                <Field
-                  innerRef={inputRef}
-                  name="name"
-                  className="modal-input"
-                  disabled={isSubmitting}
-                />
-                <ErrorMessage name="name" component="div" className="modal-error" />
-
-                <div className="modal-buttons">
-                  <button type="button" onClick={closeModal} disabled={isSubmitting}>
-                    {t('modals.cancel')}
-                  </button>
-                  <button type="submit" disabled={isSubmitting}>
-                    {t('modals.submit')}
-                  </button>
-                </div>
-              </Form>
-            )}
-          </Formik>
+            onSubmit={handleAddChannel}
+            inputRef={inputRef}
+            onCancel={closeModal}
+            cancelText={t('modals.cancel')}
+            submitText={t('modals.submit')}
+          />
         </Modal>
       )}
 
       {modal === 'rename' && selectedChannel && (
         <Modal title={t('modals.renameChannel')} onClose={closeModal}>
-          <Formik
+          <ChannelForm
             initialValues={{ name: selectedChannel.name }}
             validationSchema={makeChannelSchema(
               channels,
               t,
               selectedChannel.name,
             )}
-            onSubmit={async (values, { setSubmitting }) => {
-              try {
-                await axios.patch(
-                  `/api/v1/channels/${selectedChannel.id}`,
-                  { name: values.name.trim() },
-                  authHeaders,
-                );
-
-                closeModal();
-              } catch (error) {
-                console.error(error);
-                alert(t('errors.renameChannelFailed'));
-              } finally {
-                setSubmitting(false);
-              }
-            }}
-          >
-            {({ isSubmitting }) => (
-              <Form className="modal-form">
-                <Field
-                  innerRef={inputRef}
-                  name="name"
-                  className="modal-input"
-                  disabled={isSubmitting}
-                />
-                <ErrorMessage name="name" component="div" className="modal-error" />
-
-                <div className="modal-buttons">
-                  <button type="button" onClick={closeModal} disabled={isSubmitting}>
-                    {t('modals.cancel')}
-                  </button>
-                  <button type="submit" disabled={isSubmitting}>
-                    {t('modals.submit')}
-                  </button>
-                </div>
-              </Form>
-            )}
-          </Formik>
+            onSubmit={handleRenameChannel}
+            inputRef={inputRef}
+            onCancel={closeModal}
+            cancelText={t('modals.cancel')}
+            submitText={t('modals.submit')}
+          />
         </Modal>
       )}
 
       {modal === 'remove' && selectedChannel && (
         <Modal title={t('modals.removeChannel')} onClose={closeModal}>
           <div className="modal-form">
-            <p>
-              {t('modals.removeConfirm', { name: selectedChannel.name })}
-            </p>
+            <p>{t('modals.removeConfirm', { name: selectedChannel.name })}</p>
 
             <div className="modal-buttons">
               <button type="button" onClick={closeModal} disabled={removing}>
@@ -384,23 +370,7 @@ const HomePage = () => {
                 type="button"
                 className="danger-button"
                 disabled={removing}
-                onClick={async () => {
-                  setRemoving(true);
-
-                  try {
-                    await axios.delete(
-                      `/api/v1/channels/${selectedChannel.id}`,
-                      authHeaders,
-                    );
-
-                    closeModal();
-                  } catch (error) {
-                    console.error(error);
-                    alert(t('errors.removeChannelFailed'));
-                  } finally {
-                    setRemoving(false);
-                  }
-                }}
+                onClick={handleRemoveChannel}
               >
                 {t('modals.remove')}
               </button>
