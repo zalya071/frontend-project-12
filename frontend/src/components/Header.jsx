@@ -1,7 +1,9 @@
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 const Header = ({ showLogout = false }) => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -12,12 +14,12 @@ const Header = ({ showLogout = false }) => {
   return (
     <header className="navbar">
       <Link to="/" className="navbar-brand">
-        Hexlet Chat
+        {t('appName')}
       </Link>
 
       {showLogout && (
         <button type="button" className="logout-button" onClick={handleLogout}>
-          Выйти
+          {t('logout')}
         </button>
       )}
     </header>

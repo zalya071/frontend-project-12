@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Navigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import axios from 'axios';
 import { io } from 'socket.io-client';
@@ -20,6 +21,7 @@ import {
 } from '../store.js';
 
 const HomePage = () => {
+  const { t } = useTranslation();
   const token = getToken();
   const dispatch = useDispatch();
 
@@ -163,7 +165,7 @@ const HomePage = () => {
       setMessageText('');
     } catch (error) {
       console.error(error);
-      alert('Сообщение не отправилось. Проверь интернет.');
+      alert(t('errors.messageSendFailed'));
     } finally {
       setSending(false);
     }
@@ -174,14 +176,14 @@ const HomePage = () => {
       <Header showLogout />
 
       <div className="main-wrapper">
-        {loading && <div className="status">Загрузка...</div>}
-        {loadingError && <div className="status">Ошибка загрузки данных</div>}
+        {loading && <div className="status">{t('loading')}</div>}
+        {loadingError && <div className="status">{t('loadingError')}</div>}
 
         {!loading && !loadingError && (
           <div className="chat-container">
             <aside className="channels-sidebar">
               <div className="channels-title">
-                <b>Каналы</b>
+                <b>{t('channels')}</b>
                 <button
                   type="button"
                   className="add-channel-button"
@@ -219,10 +221,10 @@ const HomePage = () => {
                         {openedMenuId === channel.id && (
                           <div className="channel-dropdown">
                             <button type="button" onClick={() => openRemoveModal(channel)}>
-                              Удалить
+                              {t('modals.remove')}
                             </button>
                             <button type="button" onClick={() => openRenameModal(channel)}>
-                              Переименовать
+                              {t('modals.renameChannel')}
                             </button>
                           </div>
                         )}
@@ -240,11 +242,7 @@ const HomePage = () => {
                   {' '}
                   {currentChannel?.name ?? 'general'}
                 </h2>
-                <p>
-                  сообщений:
-                  {' '}
-                  {currentMessages.length}
-                </p>
+                <p>{t('messagesCount', { count: currentMessages.length })}</p>
               </div>
 
               <div className="messages-list">
@@ -260,13 +258,13 @@ const HomePage = () => {
               <form className="message-form" onSubmit={handleSubmitMessage}>
                 <input
                   type="text"
-                  placeholder="Введите сообщение..."
+                  placeholder={t('messagePlaceholder')}
                   value={messageText}
                   onChange={(e) => setMessageText(e.target.value)}
                   disabled={sending}
                 />
                 <button type="submit" disabled={sending || !messageText.trim()}>
-                  Отправить
+                  {t('send')}
                 </button>
               </form>
             </main>
@@ -275,10 +273,10 @@ const HomePage = () => {
       </div>
 
       {modal === 'add' && (
-        <Modal title="Добавить канал" onClose={closeModal}>
+        <Modal title={t('modals.addChannel')} onClose={closeModal}>
           <Formik
             initialValues={{ name: '' }}
-            validationSchema={makeChannelSchema(channels)}
+            validationSchema={makeChannelSchema(channels, t)}
             onSubmit={async (values, { setSubmitting }) => {
               try {
                 const response = await axios.post(
@@ -291,7 +289,7 @@ const HomePage = () => {
                 closeModal();
               } catch (error) {
                 console.error(error);
-                alert('Не удалось добавить канал');
+                alert(t('errors.addChannelFailed'));
               } finally {
                 setSubmitting(false);
               }
@@ -309,10 +307,10 @@ const HomePage = () => {
 
                 <div className="modal-buttons">
                   <button type="button" onClick={closeModal} disabled={isSubmitting}>
-                    Отменить
+                    {t('modals.cancel')}
                   </button>
                   <button type="submit" disabled={isSubmitting}>
-                    Отправить
+                    {t('modals.submit')}
                   </button>
                 </div>
               </Form>
@@ -322,10 +320,14 @@ const HomePage = () => {
       )}
 
       {modal === 'rename' && selectedChannel && (
-        <Modal title="Переименовать канал" onClose={closeModal}>
+        <Modal title={t('modals.renameChannel')} onClose={closeModal}>
           <Formik
             initialValues={{ name: selectedChannel.name }}
-            validationSchema={makeChannelSchema(channels, selectedChannel.name)}
+            validationSchema={makeChannelSchema(
+              channels,
+              t,
+              selectedChannel.name,
+            )}
             onSubmit={async (values, { setSubmitting }) => {
               try {
                 await axios.patch(
@@ -337,7 +339,7 @@ const HomePage = () => {
                 closeModal();
               } catch (error) {
                 console.error(error);
-                alert('Не удалось переименовать канал');
+                alert(t('errors.renameChannelFailed'));
               } finally {
                 setSubmitting(false);
               }
@@ -355,10 +357,10 @@ const HomePage = () => {
 
                 <div className="modal-buttons">
                   <button type="button" onClick={closeModal} disabled={isSubmitting}>
-                    Отменить
+                    {t('modals.cancel')}
                   </button>
                   <button type="submit" disabled={isSubmitting}>
-                    Отправить
+                    {t('modals.submit')}
                   </button>
                 </div>
               </Form>
@@ -368,22 +370,15 @@ const HomePage = () => {
       )}
 
       {modal === 'remove' && selectedChannel && (
-        <Modal title="Удалить канал" onClose={closeModal}>
+        <Modal title={t('modals.removeChannel')} onClose={closeModal}>
           <div className="modal-form">
             <p>
-              Уверены, что хотите удалить канал
-              {' '}
-              <b>
-                #
-                {' '}
-                {selectedChannel.name}
-              </b>
-              ?
+              {t('modals.removeConfirm', { name: selectedChannel.name })}
             </p>
 
             <div className="modal-buttons">
               <button type="button" onClick={closeModal} disabled={removing}>
-                Отменить
+                {t('modals.cancel')}
               </button>
               <button
                 type="button"
@@ -401,13 +396,13 @@ const HomePage = () => {
                     closeModal();
                   } catch (error) {
                     console.error(error);
-                    alert('Не удалось удалить канал');
+                    alert(t('errors.removeChannelFailed'));
                   } finally {
                     setRemoving(false);
                   }
                 }}
               >
-                Удалить
+                {t('modals.remove')}
               </button>
             </div>
           </div>

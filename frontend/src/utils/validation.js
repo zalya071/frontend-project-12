@@ -1,28 +1,28 @@
 import * as Yup from 'yup';
 
-export const makeChannelSchema = (channels, currentName = '') => Yup.object({
+export const makeChannelSchema = (channels, t, currentName = '') => Yup.object({
   name: Yup.string()
     .trim()
-    .min(3, 'От 3 до 20 символов')
-    .max(20, 'От 3 до 20 символов')
+    .min(3, t('errors.channelLength'))
+    .max(20, t('errors.channelLength'))
     .notOneOf(
       channels
         .map((channel) => channel.name)
         .filter((name) => name !== currentName),
-      'Такой канал уже существует',
+      t('errors.channelExists'),
     )
-    .required('Обязательное поле'),
+    .required(t('errors.required')),
 });
 
-export const signupSchema = Yup.object({
+export const makeSignupSchema = (t) => Yup.object({
   username: Yup.string()
-    .min(3, 'От 3 до 20 символов')
-    .max(20, 'От 3 до 20 символов')
-    .required('Обязательное поле'),
+    .min(3, t('errors.usernameLength'))
+    .max(20, t('errors.usernameLength'))
+    .required(t('errors.required')),
   password: Yup.string()
-    .min(6, 'Не менее 6 символов')
-    .required('Обязательное поле'),
+    .min(6, t('errors.passwordLength'))
+    .required(t('errors.required')),
   confirmPassword: Yup.string()
-    .oneOf([Yup.ref('password')], 'Пароли должны совпадать')
-    .required('Обязательное поле'),
+    .oneOf([Yup.ref('password')], t('errors.passwordsMustMatch'))
+    .required(t('errors.required')),
 });
