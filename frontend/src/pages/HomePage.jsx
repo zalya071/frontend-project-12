@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'react-toastify';
 import axios from 'axios';
 import { io } from 'socket.io-client';
 import { useDispatch, useSelector } from 'react-redux';
@@ -41,7 +42,6 @@ const HomePage = () => {
   const [removing, setRemoving] = useState(false);
 
   const inputRef = useRef(null);
-
   const username = localStorage.getItem('username') ?? 'admin';
 
   const authHeaders = {
@@ -69,13 +69,14 @@ const HomePage = () => {
       } catch (error) {
         console.error(error);
         setLoadingError(true);
+        toast.error(t('toast.loadingError'));
       } finally {
         setLoading(false);
       }
     };
 
     fetchChatData();
-  }, [token, dispatch]);
+  }, [token, dispatch, t]);
 
   useEffect(() => {
     const socket = io();
@@ -165,7 +166,7 @@ const HomePage = () => {
       setMessageText('');
     } catch (error) {
       console.error(error);
-      alert(t('errors.messageSendFailed'));
+      toast.error(t('toast.networkError'));
     } finally {
       setSending(false);
     }
@@ -180,10 +181,11 @@ const HomePage = () => {
       );
 
       dispatch(setCurrentChannelId(response.data.id));
+      toast.success(t('toast.channelCreated'));
       closeModal();
     } catch (error) {
       console.error(error);
-      alert(t('errors.addChannelFailed'));
+      toast.error(t('toast.networkError'));
     } finally {
       setSubmitting(false);
     }
@@ -197,10 +199,11 @@ const HomePage = () => {
         authHeaders,
       );
 
+      toast.success(t('toast.channelRenamed'));
       closeModal();
     } catch (error) {
       console.error(error);
-      alert(t('errors.renameChannelFailed'));
+      toast.error(t('toast.networkError'));
     } finally {
       setSubmitting(false);
     }
@@ -215,10 +218,11 @@ const HomePage = () => {
         authHeaders,
       );
 
+      toast.success(t('toast.channelRemoved'));
       closeModal();
     } catch (error) {
       console.error(error);
-      alert(t('errors.removeChannelFailed'));
+      toast.error(t('toast.networkError'));
     } finally {
       setRemoving(false);
     }

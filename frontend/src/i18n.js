@@ -53,10 +53,14 @@ const resources = {
         passwordLength: 'Не менее 6 символов',
         passwordsMustMatch: 'Пароли должны совпадать',
         channelExists: 'Такой канал уже существует',
-        messageSendFailed: 'Сообщение не отправилось. Проверь интернет.',
-        addChannelFailed: 'Не удалось добавить канал',
-        renameChannelFailed: 'Не удалось переименовать канал',
-        removeChannelFailed: 'Не удалось удалить канал',
+      },
+
+      toast: {
+        networkError: 'Ошибка соединения',
+        loadingError: 'Ошибка загрузки данных',
+        channelCreated: 'Канал создан',
+        channelRenamed: 'Канал переименован',
+        channelRemoved: 'Канал удалён',
       },
 
       notFound: {
