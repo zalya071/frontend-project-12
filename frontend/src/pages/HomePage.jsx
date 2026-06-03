@@ -11,6 +11,7 @@ import Modal from '../components/Modal.jsx';
 import ChannelForm from '../components/ChannelForm.jsx';
 import { getToken } from '../utils/auth.js';
 import { makeChannelSchema } from '../utils/validation.js';
+import { clean } from '../utils/profanity.js';
 
 import {
   setChatData,
@@ -156,7 +157,7 @@ const HomePage = () => {
       await axios.post(
         '/api/v1/messages',
         {
-          body,
+          body: clean(body),
           channelId: currentChannelId,
           username,
         },
@@ -176,7 +177,7 @@ const HomePage = () => {
     try {
       const response = await axios.post(
         '/api/v1/channels',
-        { name: values.name.trim() },
+        { name: clean(values.name.trim()) },
         authHeaders,
       );
 
@@ -195,7 +196,7 @@ const HomePage = () => {
     try {
       await axios.patch(
         `/api/v1/channels/${selectedChannel.id}`,
-        { name: values.name.trim() },
+        { name: clean(values.name.trim()) },
         authHeaders,
       );
 
