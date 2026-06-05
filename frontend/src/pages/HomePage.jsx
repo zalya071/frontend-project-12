@@ -269,6 +269,7 @@ const HomePage = () => {
                         <button
                           type="button"
                           className="channel-menu-button"
+                          aria-label={t('modals.channelManagement')}
                           onClick={() => setOpenedMenuId(
                             openedMenuId === channel.id ? null : channel.id,
                           )}
@@ -315,13 +316,19 @@ const HomePage = () => {
 
               <form className="message-form" onSubmit={handleSubmitMessage}>
                 <input
+                  aria-label={t('newMessage')}
+                  name="body"
                   type="text"
                   placeholder={t('messagePlaceholder')}
                   value={messageText}
                   onChange={(e) => setMessageText(e.target.value)}
                   disabled={sending}
                 />
-                <button type="submit" disabled={sending || !messageText.trim()}>
+                <button
+                  type="submit"
+                  aria-label={t('send')}
+                  disabled={sending || !messageText.trim()}
+                >
                   {t('send')}
                 </button>
               </form>

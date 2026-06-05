@@ -11,6 +11,7 @@ const resources = {
       channels: 'Каналы',
       messagesCount: 'сообщений: {{count}}',
       messagePlaceholder: 'Введите сообщение...',
+      newMessage: 'Новое сообщение',
       send: 'Отправить',
 
       login: {
@@ -44,6 +45,8 @@ const resources = {
         submit: 'Отправить',
         remove: 'Удалить',
         removeConfirm: 'Уверены, что хотите удалить канал # {{name}}?',
+        channelName: 'Имя канала',
+        channelManagement: 'Управление каналом',
       },
 
       errors: {
