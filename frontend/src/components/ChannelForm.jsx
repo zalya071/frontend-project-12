@@ -1,4 +1,5 @@
 import { Formik, Form, Field, ErrorMessage } from 'formik';
+import { useTranslation } from 'react-i18next';
 
 const ChannelForm = ({
   initialValues,
@@ -8,46 +9,55 @@ const ChannelForm = ({
   onCancel,
   cancelText,
   submitText,
-}) => (
-  <Formik
-    initialValues={initialValues}
-    validationSchema={validationSchema}
-    onSubmit={onSubmit}
-  >
-    {({ isSubmitting }) => (
-      <Form className="modal-form">
-        <Field
-          innerRef={inputRef}
-          name="name"
-          className="modal-input"
-          disabled={isSubmitting}
-        />
+}) => {
+  const { t } = useTranslation();
 
-        <ErrorMessage
-          name="name"
-          component="div"
-          className="modal-error"
-        />
+  return (
+    <Formik
+      initialValues={initialValues}
+      validationSchema={validationSchema}
+      onSubmit={onSubmit}
+    >
+      {({ isSubmitting }) => (
+        <Form className="modal-form">
+          <label htmlFor="channel-name">
+            {t('modals.channelName')}
+          </label>
 
-        <div className="modal-buttons">
-          <button
-            type="button"
-            onClick={onCancel}
+          <Field
+            id="channel-name"
+            innerRef={inputRef}
+            name="name"
+            className="modal-input"
             disabled={isSubmitting}
-          >
-            {cancelText}
-          </button>
+          />
 
-          <button
-            type="submit"
-            disabled={isSubmitting}
-          >
-            {submitText}
-          </button>
-        </div>
-      </Form>
-    )}
-  </Formik>
-);
+          <ErrorMessage
+            name="name"
+            component="div"
+            className="modal-error"
+          />
+
+          <div className="modal-buttons">
+            <button
+              type="button"
+              onClick={onCancel}
+              disabled={isSubmitting}
+            >
+              {cancelText}
+            </button>
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+            >
+              {submitText}
+            </button>
+          </div>
+        </Form>
+      )}
+    </Formik>
+  );
+};
 
 export default ChannelForm;

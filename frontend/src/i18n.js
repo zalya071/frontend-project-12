@@ -6,8 +6,10 @@ const resources = {
     translation: {
       appName: 'Hexlet Chat',
       logout: 'Выйти',
+
       loading: 'Загрузка...',
       loadingError: 'Ошибка загрузки данных',
+
       channels: 'Каналы',
       messagesCount: 'сообщений: {{count}}',
       messagePlaceholder: 'Введите сообщение...',
@@ -41,12 +43,13 @@ const resources = {
         addChannel: 'Добавить канал',
         renameChannel: 'Переименовать канал',
         removeChannel: 'Удалить канал',
+        channelName: 'Имя канала',
+        channelManagement: 'Управление каналом',
         cancel: 'Отменить',
         submit: 'Отправить',
         remove: 'Удалить',
+        rename: 'Переименовать',
         removeConfirm: 'Уверены, что хотите удалить канал # {{name}}?',
-        channelName: 'Имя канала',
-        channelManagement: 'Управление каналом',
       },
 
       errors: {
