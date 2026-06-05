@@ -245,6 +245,7 @@ const HomePage = () => {
                 <button
                   type="button"
                   className="add-channel-button"
+                  aria-label="+"
                   onClick={() => setModal('add')}
                 >
                   +
@@ -283,7 +284,7 @@ const HomePage = () => {
                               {t('modals.remove')}
                             </button>
                             <button type="button" onClick={() => openRenameModal(channel)}>
-                              {t('modals.renameChannel')}
+                              {t('modals.rename')}
                             </button>
                           </div>
                         )}
