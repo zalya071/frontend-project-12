@@ -275,16 +275,26 @@ const HomePage = () => {
                             openedMenuId === channel.id ? null : channel.id,
                           )}
                         >
-                          ⋮
+                          <span aria-hidden="true">⋮</span>
+                          <span className="visually-hidden">
+                            {t('modals.channelManagement')}
+                          </span>
                         </button>
 
                         {openedMenuId === channel.id && (
                           <div className="channel-dropdown">
-                            <button type="button" onClick={() => openRemoveModal(channel)}>
-                              {t('modals.remove')}
-                            </button>
-                            <button type="button" onClick={() => openRenameModal(channel)}>
+                            <button
+                              type="button"
+                              onClick={() => openRenameModal(channel)}
+                            >
                               {t('modals.rename')}
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => openRemoveModal(channel)}
+                            >
+                              {t('modals.remove')}
                             </button>
                           </div>
                         )}
