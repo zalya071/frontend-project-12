@@ -48,12 +48,12 @@ const LoginPage = () => {
               <Form className="login-form">
                 <div className="form-group">
                   <label htmlFor="username">{t('login.username')}</label>
-                  <Field id="username" name="username" type="text" />
+                  <Field id="username" name="username" type="text" autoComplete="off" />
                 </div>
 
                 <div className="form-group">
                   <label htmlFor="password">{t('login.password')}</label>
-                  <Field id="password" name="password" type="password" />
+                  <Field id="password" name="password" type="password" autoComplete="off" />
                 </div>
 
                 {authError && (

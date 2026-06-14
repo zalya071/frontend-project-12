@@ -61,19 +61,19 @@ const SignupPage = () => {
               <Form className="login-form">
                 <div className="form-group">
                   <label htmlFor="username">{t('signup.username')}</label>
-                  <Field id="username" name="username" type="text" />
+                  <Field id="username" name="username" type="text" autoComplete="off" />
                   <ErrorMessage name="username" component="div" className="login-error" />
                 </div>
 
                 <div className="form-group">
                   <label htmlFor="password">{t('signup.password')}</label>
-                  <Field id="password" name="password" type="password" />
+                  <Field id="password" name="password" type="password" autoComplete="off" />
                   <ErrorMessage name="password" component="div" className="login-error" />
                 </div>
 
                 <div className="form-group">
                   <label htmlFor="confirmPassword">{t('signup.confirmPassword')}</label>
-                  <Field id="confirmPassword" name="confirmPassword" type="password" />
+                  <Field id="confirmPassword" name="confirmPassword" type="password" autoComplete="off" />
                   <ErrorMessage name="confirmPassword" component="div" className="login-error" />
                 </div>
 

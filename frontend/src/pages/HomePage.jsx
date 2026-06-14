@@ -43,6 +43,7 @@ const HomePage = () => {
   const [removing, setRemoving] = useState(false);
 
   const inputRef = useRef(null);
+  const messagesEndRef = useRef(null);
   const username = localStorage.getItem('username') ?? 'admin';
 
   const authHeaders = {
@@ -123,6 +124,10 @@ const HomePage = () => {
   );
 
   const currentChannel = channels.find((channel) => channel.id === currentChannelId);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [currentMessages.length]);
 
   const closeModal = () => {
     setModal(null);
@@ -323,6 +328,7 @@ const HomePage = () => {
                     <span>{message.body}</span>
                   </div>
                 ))}
+                <div ref={messagesEndRef} />
               </div>
 
               <form className="message-form" onSubmit={handleSubmitMessage}>
@@ -334,6 +340,7 @@ const HomePage = () => {
                   value={messageText}
                   onChange={(e) => setMessageText(e.target.value)}
                   disabled={sending}
+                  autoComplete="off"
                 />
                 <button
                   type="submit"
