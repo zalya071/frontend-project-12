@@ -50,6 +50,12 @@ const HomePage = () => {
     headers: { Authorization: `Bearer ${token}` },
   };
 
+  const currentMessages = messages.filter(
+    (message) => message.channelId === currentChannelId,
+  );
+
+  const currentChannel = channels.find((channel) => channel.id === currentChannelId);
+
   useEffect(() => {
     if (!token) {
       setLoading(false);
@@ -115,19 +121,13 @@ const HomePage = () => {
     }
   }, [modal]);
 
-  if (!token) {
-    return <Navigate to="/login" replace />;
-  }
-
-  const currentMessages = messages.filter(
-    (message) => message.channelId === currentChannelId,
-  );
-
-  const currentChannel = channels.find((channel) => channel.id === currentChannelId);
-
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [currentMessages.length]);
+
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
 
   const closeModal = () => {
     setModal(null);
