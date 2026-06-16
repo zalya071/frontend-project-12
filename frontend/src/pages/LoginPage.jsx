@@ -2,16 +2,33 @@ import { useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Formik, Form, Field } from 'formik';
-import axios from 'axios';
 
 import Header from '../components/Header.jsx';
 import { getToken } from '../utils/auth.js';
+import api from '../api/api.js';
 
 const LoginPage = () => {
   const { t } = useTranslation();
   const token = getToken();
   const navigate = useNavigate();
   const [authError, setAuthError] = useState(false);
+
+  const handleSubmit = async (values, { setSubmitting }) => {
+    setAuthError(false);
+
+    try {
+      const response = await api.post('/login', values);
+
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('username', values.username);
+
+      navigate('/');
+    } catch {
+      setAuthError(true);
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   if (token) {
     return <Navigate to="/" replace />;
@@ -27,22 +44,7 @@ const LoginPage = () => {
 
           <Formik
             initialValues={{ username: '', password: '' }}
-            onSubmit={async (values, { setSubmitting }) => {
-              setAuthError(false);
-
-              try {
-                const response = await axios.post('/api/v1/login', values);
-
-                localStorage.setItem('token', response.data.token);
-                localStorage.setItem('username', values.username);
-
-                navigate('/');
-              } catch {
-                setAuthError(true);
-              } finally {
-                setSubmitting(false);
-              }
-            }}
+            onSubmit={handleSubmit}
           >
             {({ isSubmitting }) => (
               <Form className="login-form">
@@ -56,9 +58,7 @@ const LoginPage = () => {
                   <Field id="password" name="password" type="password" autoComplete="off" />
                 </div>
 
-                {authError && (
-                  <div className="login-error">{t('login.error')}</div>
-                )}
+                {authError && <div className="login-error">{t('login.error')}</div>}
 
                 <button type="submit" disabled={isSubmitting}>
                   {t('login.submit')}

@@ -20,7 +20,6 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@hexlet/chat-server": "^2.0.4",
-    "react-toastify": "^11.1.0"
+    "@hexlet/chat-server": "^2.0.4"
   }
 }
