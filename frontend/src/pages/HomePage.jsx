@@ -2,16 +2,19 @@ import { useEffect, useRef, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
-import axios from 'axios';
 import { io } from 'socket.io-client';
 import { useDispatch, useSelector } from 'react-redux';
 
 import Header from '../components/Header.jsx';
-import Modal from '../components/Modal.jsx';
-import ChannelForm from '../components/ChannelForm.jsx';
+import MessageForm from '../components/MessageForm.jsx';
+import MessagesList from '../components/MessagesList.jsx';
+import AddChannelModal from '../components/modals/AddChannelModal.jsx';
+import RenameChannelModal from '../components/modals/RenameChannelModal.jsx';
+import RemoveChannelModal from '../components/modals/RemoveChannelModal.jsx';
 import { getToken } from '../utils/auth.js';
 import { makeChannelSchema } from '../utils/validation.js';
 import { clean } from '../utils/profanity.js';
+import { getAuthApi } from '../api/api.js';
 
 import {
   setChatData,
@@ -45,10 +48,7 @@ const HomePage = () => {
   const inputRef = useRef(null);
   const messagesEndRef = useRef(null);
   const username = localStorage.getItem('username') ?? 'admin';
-
-  const authHeaders = {
-    headers: { Authorization: `Bearer ${token}` },
-  };
+  const authApi = getAuthApi(token);
 
   const currentMessages = messages.filter(
     (message) => message.channelId === currentChannelId,
@@ -65,8 +65,8 @@ const HomePage = () => {
     const fetchChatData = async () => {
       try {
         const [channelsResponse, messagesResponse] = await Promise.all([
-          axios.get('/api/v1/channels', authHeaders),
-          axios.get('/api/v1/messages', authHeaders),
+          authApi.get('/channels'),
+          authApi.get('/messages'),
         ]);
 
         dispatch(setChatData({
@@ -159,15 +159,11 @@ const HomePage = () => {
     setSending(true);
 
     try {
-      await axios.post(
-        '/api/v1/messages',
-        {
-          body: clean(body),
-          channelId: currentChannelId,
-          username,
-        },
-        authHeaders,
-      );
+      await authApi.post('/messages', {
+        body: clean(body),
+        channelId: currentChannelId,
+        username,
+      });
 
       setMessageText('');
     } catch (error) {
@@ -180,11 +176,9 @@ const HomePage = () => {
 
   const handleAddChannel = async (values, { setSubmitting }) => {
     try {
-      const response = await axios.post(
-        '/api/v1/channels',
-        { name: clean(values.name.trim()) },
-        authHeaders,
-      );
+      const response = await authApi.post('/channels', {
+        name: clean(values.name.trim()),
+      });
 
       dispatch(setCurrentChannelId(response.data.id));
       toast.success(t('toast.channelCreated'));
@@ -199,11 +193,9 @@ const HomePage = () => {
 
   const handleRenameChannel = async (values, { setSubmitting }) => {
     try {
-      await axios.patch(
-        `/api/v1/channels/${selectedChannel.id}`,
-        { name: clean(values.name.trim()) },
-        authHeaders,
-      );
+      await authApi.patch(`/channels/${selectedChannel.id}`, {
+        name: clean(values.name.trim()),
+      });
 
       toast.success(t('toast.channelRenamed'));
       closeModal();
@@ -219,10 +211,7 @@ const HomePage = () => {
     setRemoving(true);
 
     try {
-      await axios.delete(
-        `/api/v1/channels/${selectedChannel.id}`,
-        authHeaders,
-      );
+      await authApi.delete(`/channels/${selectedChannel.id}`);
 
       toast.success(t('toast.channelRemoved'));
       closeModal();
@@ -320,93 +309,50 @@ const HomePage = () => {
                 <p>{t('messagesCount', { count: currentMessages.length })}</p>
               </div>
 
-              <div className="messages-list">
-                {currentMessages.map((message) => (
-                  <div key={message.id} className="message">
-                    <b>{message.username}</b>
-                    {': '}
-                    <span>{message.body}</span>
-                  </div>
-                ))}
-                <div ref={messagesEndRef} />
-              </div>
+              <MessagesList
+                messages={currentMessages}
+                messagesEndRef={messagesEndRef}
+              />
 
-              <form className="message-form" onSubmit={handleSubmitMessage}>
-                <input
-                  aria-label={t('newMessage')}
-                  name="body"
-                  type="text"
-                  placeholder={t('messagePlaceholder')}
-                  value={messageText}
-                  onChange={(e) => setMessageText(e.target.value)}
-                  disabled={sending}
-                  autoComplete="off"
-                />
-                <button
-                  type="submit"
-                  aria-label={t('send')}
-                  disabled={sending || !messageText.trim()}
-                >
-                  {t('send')}
-                </button>
-              </form>
+              <MessageForm
+                messageText={messageText}
+                setMessageText={setMessageText}
+                sending={sending}
+                onSubmit={handleSubmitMessage}
+              />
             </main>
           </div>
         )}
       </div>
 
       {modal === 'add' && (
-        <Modal title={t('modals.addChannel')} onClose={closeModal}>
-          <ChannelForm
-            initialValues={{ name: '' }}
-            validationSchema={makeChannelSchema(channels, t)}
-            onSubmit={handleAddChannel}
-            inputRef={inputRef}
-            onCancel={closeModal}
-            cancelText={t('modals.cancel')}
-            submitText={t('modals.submit')}
-          />
-        </Modal>
+        <AddChannelModal
+          channels={channels}
+          makeChannelSchema={makeChannelSchema}
+          onSubmit={handleAddChannel}
+          inputRef={inputRef}
+          onClose={closeModal}
+        />
       )}
 
       {modal === 'rename' && selectedChannel && (
-        <Modal title={t('modals.renameChannel')} onClose={closeModal}>
-          <ChannelForm
-            initialValues={{ name: selectedChannel.name }}
-            validationSchema={makeChannelSchema(
-              channels,
-              t,
-              selectedChannel.name,
-            )}
-            onSubmit={handleRenameChannel}
-            inputRef={inputRef}
-            onCancel={closeModal}
-            cancelText={t('modals.cancel')}
-            submitText={t('modals.submit')}
-          />
-        </Modal>
+        <RenameChannelModal
+          channels={channels}
+          selectedChannel={selectedChannel}
+          makeChannelSchema={makeChannelSchema}
+          onSubmit={handleRenameChannel}
+          inputRef={inputRef}
+          onClose={closeModal}
+        />
       )}
 
       {modal === 'remove' && selectedChannel && (
-        <Modal title={t('modals.removeChannel')} onClose={closeModal}>
-          <div className="modal-form">
-            <p>{t('modals.removeConfirm', { name: selectedChannel.name })}</p>
-
-            <div className="modal-buttons">
-              <button type="button" onClick={closeModal} disabled={removing}>
-                {t('modals.cancel')}
-              </button>
-              <button
-                type="button"
-                className="danger-button"
-                disabled={removing}
-                onClick={handleRemoveChannel}
-              >
-                {t('modals.remove')}
-              </button>
-            </div>
-          </div>
-        </Modal>
+        <RemoveChannelModal
+          selectedChannel={selectedChannel}
+          removing={removing}
+          onRemove={handleRemoveChannel}
+          onClose={closeModal}
+        />
       )}
     </div>
   );
