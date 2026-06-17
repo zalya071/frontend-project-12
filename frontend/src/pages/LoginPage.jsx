@@ -16,6 +16,11 @@ const LoginPage = () => {
   const handleSubmit = async (values, { setSubmitting }) => {
     setAuthError(false);
 
+    if (!values.username.trim() || !values.password.trim()) {
+      setSubmitting(false);
+      return;
+    }
+
     try {
       const response = await api.post('/login', values);
 

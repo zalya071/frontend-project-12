@@ -5,12 +5,14 @@ const MessageForm = ({
   setMessageText,
   sending,
   onSubmit,
+  inputRef,
 }) => {
   const { t } = useTranslation();
 
   return (
     <form className="message-form" onSubmit={onSubmit}>
       <input
+        ref={inputRef}
         aria-label={t('newMessage')}
         name="body"
         type="text"

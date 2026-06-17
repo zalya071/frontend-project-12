@@ -47,6 +47,8 @@ const HomePage = () => {
 
   const inputRef = useRef(null);
   const messagesEndRef = useRef(null);
+  const messageInputRef = useRef(null);
+
   const username = localStorage.getItem('username') ?? 'admin';
   const authApi = getAuthApi(token);
 
@@ -125,6 +127,11 @@ const HomePage = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [currentMessages.length]);
 
+  useEffect(() => {
+    setMessageText('');
+    messageInputRef.current?.focus();
+  }, [currentChannelId]);
+
   if (!token) {
     return <Navigate to="/login" replace />;
   }
@@ -133,6 +140,10 @@ const HomePage = () => {
     setModal(null);
     setSelectedChannel(null);
     setRemoving(false);
+  };
+
+  const handleChangeChannel = (channelId) => {
+    dispatch(setCurrentChannelId(channelId));
   };
 
   const openRenameModal = (channel) => {
@@ -166,6 +177,7 @@ const HomePage = () => {
       });
 
       setMessageText('');
+      messageInputRef.current?.focus();
     } catch (error) {
       console.error(error);
       toast.error(t('toast.networkError'));
@@ -199,6 +211,7 @@ const HomePage = () => {
 
       toast.success(t('toast.channelRenamed'));
       closeModal();
+      messageInputRef.current?.focus();
     } catch (error) {
       console.error(error);
       toast.error(t('toast.networkError'));
@@ -215,6 +228,7 @@ const HomePage = () => {
 
       toast.success(t('toast.channelRemoved'));
       closeModal();
+      messageInputRef.current?.focus();
     } catch (error) {
       console.error(error);
       toast.error(t('toast.networkError'));
@@ -252,7 +266,7 @@ const HomePage = () => {
                     <button
                       type="button"
                       className={channel.id === currentChannelId ? 'channel-button active' : 'channel-button'}
-                      onClick={() => dispatch(setCurrentChannelId(channel.id))}
+                      onClick={() => handleChangeChannel(channel.id)}
                     >
                       #
                       {' '}
@@ -319,6 +333,7 @@ const HomePage = () => {
                 setMessageText={setMessageText}
                 sending={sending}
                 onSubmit={handleSubmitMessage}
+                inputRef={messageInputRef}
               />
             </main>
           </div>
